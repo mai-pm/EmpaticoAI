@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empático AI — Kickoff · Aerolab</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:   #203B83;
+  --orange: #FF5005;
+  --dark:   #2A2823;
+  --cloud:  #FCFCFC;
+  --gray1:  #F0F0EF;
+  --gray2:  #DFDFDE;
+  --gray3:  #93928F;
+  --gray4:  #54524E;
+}
+
+html, body { width: 100%; height: 100%; overflow: hidden; background: #111; }
+body { font-family: 'DM Sans', sans-serif; }
+
+.viewport { width: 100vw; height: 100vh; overflow: hidden; position: relative; }
+.deck {
+  display: flex;
+  width: calc(10 * 100vw);
+  height: 100vh;
+  transition: transform .5s cubic-bezier(.77,0,.175,1);
+}
+
+.slide {
+  width: 100vw; height: 100vh;
+  flex-shrink: 0; position: relative;
+  overflow: hidden; background: var(--cloud);
+}
+
+/* Fixed 1280×720 canvas, scaled by JS */
+.canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 1280px; height: 720px;
+  transform-origin: top left;
+}
+
+/* ─── SHARED ─── */
+.top-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--orange);
+}
+.tag {
+  position: absolute; top: 44px; left: 64px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--orange);
+}
+.title {
+  position: absolute; top: 66px; left: 64px; right: 64px;
+  font-size: 60px; font-weight: 700;
+  letter-spacing: -.025em; line-height: .95;
+  color: var(--dark);
+}
+/* body area: starts below title, above footer */
+.body {
+  position: absolute;
+  top: 192px; left: 64px; right: 64px; bottom: 64px;
+}
+.footer {
+  position: absolute; bottom: 28px; left: 64px; right: 64px;
+  display: flex; justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--gray3);
+}
+.footer b { color: var(--orange); }
+
+/* ══════ S1 — COVER ══════ */
+#s1 { background: var(--blue); }
+#s1 .kite-bg {
+  position: absolute; right: 48px; top: 40px;
+  width: 260px; height: 312px; opacity: .07;
+}
+#s1 .eyebrow {
+  position: absolute; top: 44px; left: 64px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+}
+#s1 .c-title {
+  position: absolute; top: 80px; left: 64px;
+  font-size: 116px; font-weight: 700;
+  letter-spacing: -.04em; line-height: .88; color: var(--cloud);
+}
+#s1 .c-title span { color: var(--orange); }
+#s1 .c-sub {
+  position: absolute; bottom: 160px; left: 64px;
+  font-size: 16px; font-weight: 300;
+  color: rgba(255,255,255,.45); letter-spacing: .02em;
+}
+#s1 .c-meta {
+  position: absolute; bottom: 60px; left: 64px;
+  display: flex; gap: 48px;
+}
+.c-meta-item label {
+  display: block; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255,255,255,.28); margin-bottom: 4px;
+}
+.c-meta-item span { font-size: 14px; font-weight: 500; color: rgba(255,255,255,.75); }
+#s1 .c-logo {
+  position: absolute; bottom: 56px; right: 64px;
+  font-size: 17px; font-weight: 700;
+  color: rgba(255,255,255,.45); letter-spacing: .04em;
+}
+
+/* ══════ S2 — AGENDA ══════ */
+.ag-list {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column;
+}
+.ag-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--gray2); flex: 1;
+}
+.ag-row:last-child { border-bottom: none; }
+.ag-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--orange); letter-spacing: .08em;
+  width: 52px; flex-shrink: 0;
+}
+.ag-name { font-size: 24px; font-weight: 500; color: var(--dark); flex: 1; }
+.ag-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--gray3); letter-spacing: .04em;
+}
+
+/* ══════ S3 — TEAM ══════ */
+.team-list {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+}
+.t-sec {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 20px;
+}
+.t-row {
+  display: flex; align-items: baseline;
+  padding: 16px 0; border-bottom: 1px solid var(--gray2);
+}
+.t-row:last-child { border-bottom: none; }
+.t-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--gray3); width: 160px; flex-shrink: 0;
+}
+.t-name { font-size: 20px; font-weight: 500; color: var(--dark); flex: 1; }
+.t-detail { font-size: 13px; color: var(--gray3); }
+
+/* ══════ S4 — PRODUCT ══════ */
+#s4 { background: var(--dark); }
+#s4 .tag  { color: rgba(255,80,5,.7); }
+#s4 .title { color: var(--cloud); }
+#s4 .footer { color: rgba(255,255,255,.2); }
+#s4 .footer b { color: rgba(255,80,5,.5); }
+.quote {
+  position: absolute; top: 0; left: 0; right: 0;
+  border-left: 3px solid var(--orange); padding: 22px 28px;
+}
+.quote p {
+  font-size: 20px; font-style: italic; font-weight: 300;
+  color: rgba(255,255,255,.78); line-height: 1.55;
+}
+.three-cols {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+}
+.col-card { padding: 18px 20px; border-top: 2px solid rgba(255,255,255,.1); }
+.col-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 10px;
+}
+.col-txt { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.65; }
+
+/* ══════ S5 — FOUNDER ══════ */
+#s5 .title { font-size: 44px; line-height: 1.1; }
+#s5 .title small { display: block; font-size: 26px; font-weight: 300; color: var(--gray3); margin-top: 4px; }
+.two-col {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 76px;
+  display: grid; grid-template-columns: 1fr 1px 1fr; gap: 48px;
+}
+.col-div { background: var(--gray2); }
+.track-row {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--gray2); font-size: 15px;
+}
+.track-row:last-child { border-bottom: none; }
+.t-co { font-weight: 600; color: var(--dark); }
+.t-ex { color: var(--gray3); font-size: 13px; }
+.op-block { margin-bottom: 18px; }
+.op-block:last-child { margin-bottom: 0; }
+.op-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 5px;
+}
+.op-txt { font-size: 13px; color: var(--gray4); line-height: 1.65; }
+.insight-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 64px;
+  background: var(--gray1);
+  display: flex; align-items: center; padding: 0 20px;
+}
+.insight-bar p { font-size: 13px; color: var(--dark); line-height: 1.5; }
+.insight-bar b { color: var(--orange); }
+
+/* ══════ S6 — CONTEXT / AMBITION ══════ */
+#s6 { background: var(--blue); }
+#s6 .tag  { color: rgba(255,255,255,.35); }
+#s6 .title { color: var(--cloud); }
+#s6 .footer { color: rgba(255,255,255,.2); }
+#s6 .footer b { color: rgba(255,80,5,.5); }
+
+/* Top row: problem + solve (equal columns, fixed height) */
+.s6-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  height: 188px;
+}
+.prob { padding: 18px 20px; border-top: 2px solid; }
+.prob.neg { border-color: #E2373C; background: rgba(226,55,60,.08); }
+.prob.pos { border-color: #0FA05C; background: rgba(15,160,92,.08); }
+.prob-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+}
+.prob.neg .prob-lbl { color: #E2373C; }
+.prob.pos .prob-lbl { color: #0FA05C; }
+.prob-txt { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.65; }
+
+/* Success section below */
+.s6-success {
+  position: absolute; bottom: 0; left: 0; right: 0;
+}
+.s6-success-hdr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(255,255,255,.35); margin-bottom: 12px;
+}
+.success-grid {
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 10px;
+}
+.success-item {
+  padding: 14px 14px 16px;
+  border-top: 2px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.05);
+}
+.success-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--orange); letter-spacing: .1em; margin-bottom: 7px;
+}
+.success-t { font-size: 12px; font-weight: 600; color: var(--cloud); margin-bottom: 5px; line-height: 1.3; }
+.success-b { font-size: 11px; color: rgba(255,255,255,.42); line-height: 1.65; }
+
+/* ══════ S7 — SCOPE ══════ */
+.stream-grid {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+}
+.stream { background: var(--dark); padding: 28px 24px; display: flex; flex-direction: column; }
+.st-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 12px;
+}
+.st-t { font-size: 26px; font-weight: 700; color: var(--cloud); margin-bottom: 4px; }
+.st-m {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--gray3); letter-spacing: .06em; margin-bottom: 22px;
+}
+.st-items { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.st-item {
+  font-size: 13px; color: rgba(255,255,255,.5);
+  line-height: 1.5; padding-left: 16px; position: relative;
+}
+.st-item::before { content: '→'; position: absolute; left: 0; color: var(--orange); }
+
+/* ══════ S8 — TIMELINE ══════ */
+.gantt-wrap {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 100px;
+}
+.wk-heads {
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 6px; margin-bottom: 12px;
+}
+.wk-h {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--gray3); text-align: center;
+}
+.g-row { display: grid; grid-template-columns: repeat(6,1fr); gap: 6px; margin-bottom: 7px; }
+.bar {
+  height: 48px; display: flex; align-items: center;
+  padding-left: 14px; font-size: 13px; font-weight: 500; color: var(--cloud);
+}
+.bar.blue   { background: var(--blue); }
+.bar.orange { background: var(--orange); }
+.bar.dark   { background: var(--dark); }
+.bar.ghost  {
+  background: transparent; border: 1px dashed var(--gray2);
+  color: var(--gray3); font-weight: 400;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+}
+.span2 { grid-column: span 2; }
+.span4 { grid-column: span 4; }
+.empty { height: 48px; }
+.deadline-block {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 88px;
+  background: var(--blue);
+  display: flex; align-items: center; padding: 0 24px; gap: 20px;
+}
+.dl-icon { font-size: 24px; flex-shrink: 0; }
+.dl-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255,255,255,.38); margin-bottom: 4px;
+}
+.dl-t { font-size: 20px; font-weight: 700; color: var(--cloud); }
+.dl-s { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 3px; }
+
+/* ══════ S9 — HOW WE WORK ══════ */
+#s9 { background: var(--dark); }
+#s9 .tag  { color: rgba(255,80,5,.7); }
+#s9 .title { color: var(--cloud); }
+#s9 .footer { color: rgba(255,255,255,.2); }
+#s9 .footer b { color: rgba(255,80,5,.5); }
+.p-grid {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: 1fr 1fr; gap: 12px;
+}
+.p-card { padding: 20px; border-top: 1px solid rgba(255,255,255,.1); }
+.p-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--orange); letter-spacing: .1em; margin-bottom: 8px;
+}
+.p-t { font-size: 15px; font-weight: 600; color: var(--cloud); margin-bottom: 7px; }
+.p-b { font-size: 12px; color: rgba(255,255,255,.43); line-height: 1.7; }
+
+/* ══════ S10 — QUESTIONS ══════ */
+.q-list {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column;
+}
+.q-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--gray2); flex: 1;
+}
+.q-row:last-child { border-bottom: none; }
+.q-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  font-weight: 500; width: 80px; flex-shrink: 0;
+}
+.q-cat.product { color: var(--blue); }
+.q-cat.brand   { color: var(--orange); }
+.q-cat.process { color: #0FA05C; }
+.q-txt { font-size: 15px; color: var(--dark); line-height: 1.45; padding: 0 16px; }
+
+/* ══════ S11 — NEXT STEPS ══════ */
+#s11 .left-p {
+  position: absolute; top: 0; left: 0; bottom: 0; width: 620px;
+  padding: 64px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+#s11 .right-p {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 620px;
+  background: var(--orange); padding: 64px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.ns-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 10px;
+}
+.ns-title {
+  font-size: 80px; font-weight: 700;
+  letter-spacing: -.03em; line-height: .88; color: var(--dark);
+}
+.ns-foot {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--gray3);
+}
+.steps { display: flex; flex-direction: column; }
+.step {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 11px 0; border-bottom: 1px solid var(--gray2);
+}
+.step:last-child { border-bottom: none; }
+.step-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--orange); font-weight: 500;
+  flex-shrink: 0; margin-top: 2px; width: 24px;
+}
+.step-t { font-size: 14px; color: var(--dark); line-height: 1.4; }
+.r-kite {
+  position: absolute; top: 48px; right: 40px;
+  width: 160px; height: 192px; opacity: .12;
+}
+.r-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255,255,255,.55); margin-bottom: 8px;
+}
+.r-url {
+  font-size: 40px; font-weight: 700; color: var(--cloud);
+  letter-spacing: -.02em; line-height: 1; margin-bottom: 12px;
+}
+.r-evt { font-size: 14px; color: rgba(255,255,255,.65); line-height: 1.7; }
+
+/* ─── NAV ─── */
+.nav {
+  position: fixed; bottom: 28px; right: 36px; z-index: 200;
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: .08em;
+  color: rgba(255,255,255,.45); min-width: 44px; text-align: center;
+}
+.nav-btn {
+  width: 38px; height: 38px;
+  background: rgba(42,40,35,.7); border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.7); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px); transition: background .15s, border-color .15s;
+}
+.nav-btn:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+.progress {
+  position: fixed; bottom: 0; left: 0;
+  height: 2px; background: var(--orange);
+  transition: width .4s ease; z-index: 200;
+}
+</style>
+</head>
+<body>
+<div class="viewport">
+<div class="deck" id="deck">
+
+<!-- ══ 01 COVER ══ -->
+<div class="slide" id="s1">
+  <div class="canvas" id="c1">
+    <div class="top-bar"></div>
+    <svg class="kite-bg" viewBox="0 0 100 120" fill="none">
+      <path d="M50 5 L95 52 L50 115 L5 52 Z" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M50 5 L95 52 L50 115 L5 52 Z" stroke="white" stroke-width=".8" fill="none" transform="scale(.6) translate(33.3 26)"/>
+      <line x1="50" y1="115" x2="50" y2="130" stroke="white" stroke-width="1.5"/>
+    </svg>
+    <div class="eyebrow">Kickoff Presentation</div>
+    <div class="c-title">Empático<br><span>AI</span></div>
+    <div class="c-sub">Branding · Website · Product Design</div>
+    <div class="c-meta">
+      <div class="c-meta-item"><label>Client</label><span>Empático AI</span></div>
+      <div class="c-meta-item"><label>Agency</label><span>Aerolab</span></div>
+      <div class="c-meta-item"><label>Date</label><span>March 2026</span></div>
+      <div class="c-meta-item"><label>Phase</label><span>Kickoff</span></div>
+    </div>
+    <div class="c-logo">🪁 aerolab</div>
+  </div>
+</div>
+
+<!-- ══ 02 AGENDA ══ -->
+<div class="slide" id="s2">
+  <div class="canvas" id="c2">
+    <div class="top-bar"></div>
+    <div class="tag">AGENDA</div>
+    <div class="title">What we'll<br>cover today</div>
+    <div class="body">
+      <div class="ag-list">
+        <div class="ag-row"><div class="ag-n">01</div><div class="ag-name">Meet the team</div><div class="ag-sub">The Aerolab crew on this project</div></div>
+        <div class="ag-row"><div class="ag-n">02</div><div class="ag-name">Who is Empático?</div><div class="ag-sub">Product, founder, context</div></div>
+        <div class="ag-row"><div class="ag-n">03</div><div class="ag-name">The opportunity &amp; our ambition</div><div class="ag-sub">Problem, what we solve, what success looks like</div></div>
+        <div class="ag-row"><div class="ag-n">04</div><div class="ag-name">Scope &amp; timeline</div><div class="ag-sub">Three workstreams, 6-week plan</div></div>
+        <div class="ag-row"><div class="ag-n">05</div><div class="ag-name">How we'll work</div><div class="ag-sub">Mindset, cadence, open questions</div></div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 03 TEAM ══ -->
+<div class="slide" id="s3">
+  <div class="canvas" id="c3">
+    <div class="top-bar"></div>
+    <div class="tag">THE TEAM</div>
+    <div class="title">Who's on this</div>
+    <div class="body">
+      <div class="team-list">
+        <div class="t-sec">AEROLAB</div>
+        <div class="t-row">
+          <div class="t-role">Project Manager</div>
+          <div class="t-name">Mai Delgado</div>
+          <div class="t-detail">Part-time · client contact</div>
+        </div>
+        <div class="t-row">
+          <div class="t-role">Design Lead</div>
+          <div class="t-name">Damian Lopez</div>
+          <div class="t-detail">Part-time · oversight + key reviews</div>
+        </div>
+        <div class="t-row">
+          <div class="t-role">Brand Designer</div>
+          <div class="t-name">Magali Bazzi</div>
+          <div class="t-detail">Full-time · Weeks 1–4</div>
+        </div>
+        <div class="t-row">
+          <div class="t-role">Product Designer</div>
+          <div class="t-name">Fede Castagno</div>
+          <div class="t-detail">Full-time · Weeks 1–6</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 04 PRODUCT ══ -->
+<div class="slide" id="s4">
+  <div class="canvas" id="c4">
+    <div class="tag">THE PRODUCT</div>
+    <div class="title">What is Empático?</div>
+    <div class="body">
+      <div class="quote">
+        <p>"AI virtual employees that live inside your CRM and answer questions about customer experience — via chat. No dashboards, no SQL, no weekly reports."</p>
+      </div>
+      <div class="three-cols">
+        <div class="col-card"><div class="col-lbl">How it works</div><div class="col-txt">Connects to Zendesk → learns your brand context → creates AI analysts you can query conversationally</div></div>
+        <div class="col-card"><div class="col-lbl">What it replaces</div><div class="col-txt">Manual tagging, spreadsheets, waiting for the weekly CX report, pinging the analyst for a quick answer</div></div>
+        <div class="col-card"><div class="col-lbl">Current state</div><div class="col-txt">2 virtual employees live (CX Auditing + Trends). Design partners actively using it. AI is real.</div></div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 06 CONTEXT / AMBITION ══ -->
+<div class="slide" id="s6">
+  <div class="canvas" id="c6">
+    <div class="tag">CONTEXT</div>
+    <div class="title">The opportunity<br>&amp; our ambition</div>
+    <div class="body">
+
+      <div class="s6-top">
+        <div class="prob neg">
+          <div class="prob-lbl">⚠ The problem</div>
+          <div class="prob-txt">Empático's AI is real and working — but the product looks like what it is: a prototype built by engineers with no designer in the room. Enterprise buyers need to trust what they see before they buy what they can't yet see.</div>
+        </div>
+        <div class="prob pos">
+          <div class="prob-lbl">✓ What we solve</div>
+          <div class="prob-txt">We give Empático the identity, the interface, and the story it needs to sell. A brand that signals serious B2B product. A website that generates demos. A UI that feels inevitable — simple, focused, built for how CX teams actually think.</div>
+        </div>
+      </div>
+
+      <div class="s6-success">
+        <div class="s6-success-hdr">WHAT SUCCESS LOOKS LIKE</div>
+        <div class="success-grid">
+          <div class="success-item">
+            <div class="success-n">01</div>
+            <div class="success-t">A product that earns attention</div>
+            <div class="success-b">Walking into Zendesk Conference with something polished, coherent, and compelling enough to stop the right people.</div>
+          </div>
+          <div class="success-item">
+            <div class="success-n">02</div>
+            <div class="success-t">Design backed by real insight</div>
+            <div class="success-b">Every decision informed by what we learn from actual users — research that shapes the product, not just validates it.</div>
+          </div>
+          <div class="success-item">
+            <div class="success-n">03</div>
+            <div class="success-t">A brand built to scale</div>
+            <div class="success-b">An identity strong enough to grow with the company — from first demo to first funding round to first 100 customers.</div>
+          </div>
+          <div class="success-item">
+            <div class="success-n">04</div>
+            <div class="success-t">A UI that feels inevitable</div>
+            <div class="success-b">An interface so clear that users don't think about it — they just get answers. The product disappears; the insight remains.</div>
+          </div>
+          <div class="success-item">
+            <div class="success-n">05</div>
+            <div class="success-t">Aerolab as a true partner</div>
+            <div class="success-b">Not a vendor delivering specs — a team embedded in the problem, moving fast, thinking strategically, raising the bar at every step.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 07 SCOPE ══ -->
+<div class="slide" id="s7">
+  <div class="canvas" id="c7">
+    <div class="top-bar"></div>
+    <div class="tag">SCOPE</div>
+    <div class="title">Three workstreams</div>
+    <div class="body">
+      <div class="stream-grid">
+        <div class="stream">
+          <div class="st-n">01 — Brand Identity</div>
+          <div class="st-t">Brand</div>
+          <div class="st-m">WEEKS 1–2 · $10K EQUIV</div>
+          <div class="st-items">
+            <div class="st-item">Logo &amp; brand mark</div>
+            <div class="st-item">Brand guidelines (color, type, tone, usage)</div>
+            <div class="st-item">Core asset kit (icons, patterns, social templates)</div>
+          </div>
+        </div>
+        <div class="stream">
+          <div class="st-n">02 — Website</div>
+          <div class="st-t">Website</div>
+          <div class="st-m">WEEKS 3–4 · $9K EQUIV</div>
+          <div class="st-items">
+            <div class="st-item">One-pager on Framer</div>
+            <div class="st-item">Demo booking via Calendly CTA</div>
+            <div class="st-item">Product explainer + use cases, responsive</div>
+          </div>
+        </div>
+        <div class="stream">
+          <div class="st-n">03 — Product UI/UX</div>
+          <div class="st-t">Product</div>
+          <div class="st-m">WEEKS 3–6 · $15K EQUIV</div>
+          <div class="st-items">
+            <div class="st-item">UX audit of current platform</div>
+            <div class="st-item">Login, onboarding, employee selection, chat</div>
+            <div class="st-item">UI kit + design system for dev handoff</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 08 TIMELINE ══ -->
+<div class="slide" id="s8">
+  <div class="canvas" id="c8">
+    <div class="top-bar"></div>
+    <div class="tag">TIMELINE</div>
+    <div class="title">6-week plan</div>
+    <div class="body">
+      <div class="gantt-wrap">
+        <div class="wk-heads">
+          <div class="wk-h">WK 1</div><div class="wk-h">WK 2</div>
+          <div class="wk-h">WK 3</div><div class="wk-h">WK 4</div>
+          <div class="wk-h">WK 5</div><div class="wk-h">WK 6</div>
+        </div>
+        <div class="g-row"><div class="bar blue span2">Brand Identity</div><div class="empty"></div><div class="empty"></div><div class="empty"></div><div class="empty"></div></div>
+        <div class="g-row" style="margin-bottom:10px"><div class="bar ghost span2">UX Audit (parallel)</div><div class="empty"></div><div class="empty"></div><div class="empty"></div><div class="empty"></div></div>
+        <div class="g-row"><div class="empty"></div><div class="empty"></div><div class="bar orange span2">Website (Framer)</div><div class="empty"></div><div class="empty"></div></div>
+        <div class="g-row"><div class="empty"></div><div class="empty"></div><div class="bar dark span4">Product UI/UX</div></div>
+      </div>
+      <div class="deadline-block">
+        <div class="dl-icon">🚀</div>
+        <div>
+          <div class="dl-lbl">HARD DEADLINE</div>
+          <div class="dl-t">Zendesk Conference — May 2026</div>
+          <div class="dl-s">Brand + website live before selling season. Product demo ready for conference.</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 09 HOW WE WORK ══ -->
+<div class="slide" id="s9">
+  <div class="canvas" id="c9">
+    <div class="tag">HOW WE WORK</div>
+    <div class="title">Mindset &amp;<br>principles</div>
+    <div class="body">
+      <div class="p-grid">
+        <div class="p-card"><div class="p-n">01</div><div class="p-t">Startup mode</div><div class="p-b">Fast, scrappy, opinionated. No big reveals — WIP early and often. Short feedback loops.</div></div>
+        <div class="p-card"><div class="p-n">02</div><div class="p-t">Show, don't talk</div><div class="p-b">Put pixels in front of Santi. Don't pitch in the abstract. Prototypes beat explanations.</div></div>
+        <div class="p-card"><div class="p-n">03</div><div class="p-t">Iterative by design</div><div class="p-b">Brand first (wks 1–2). Website + product parallel from wk 3. Build → react → rebuild.</div></div>
+        <div class="p-card"><div class="p-n">04</div><div class="p-t">User insight built-in</div><div class="p-b">Join Utoppia design partner sessions. Observe and fold insights into the design.</div></div>
+        <div class="p-card"><div class="p-n">05</div><div class="p-t">Time is real</div><div class="p-b">Zendesk Conference is a hard date. Commercial readiness is the KPI for every decision we make.</div></div>
+        <div class="p-card"><div class="p-n">06</div><div class="p-t">Figma for handoff</div><div class="p-b">We design in Figma, they implement. Website on Framer. UI kit delivered for their devs.</div></div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 10 QUESTIONS ══ -->
+<div class="slide" id="s10">
+  <div class="canvas" id="c10">
+    <div class="top-bar"></div>
+    <div class="tag">OPEN QUESTIONS</div>
+    <div class="title">Align with<br>Santi today</div>
+    <div class="body">
+      <div class="q-list">
+        <div class="q-row"><div class="q-cat product">PRODUCT</div><div class="q-txt">Who is the ideal customer? Enterprise, mid-market, early-stage? US-focused or Latam-first?</div></div>
+        <div class="q-row"><div class="q-cat product">PRODUCT</div><div class="q-txt">How will you monetize — per virtual employee, per seat, or usage-based?</div></div>
+        <div class="q-row"><div class="q-cat product">PRODUCT</div><div class="q-txt">What does the Zendesk Conference demo need to show to close deals?</div></div>
+        <div class="q-row"><div class="q-cat brand">BRAND</div><div class="q-txt">Brands you look up to visually? Words that SHOULD and SHOULD NOT describe Empático?</div></div>
+        <div class="q-row"><div class="q-cat brand">BRAND</div><div class="q-txt">Anything from the current identity to keep, or is this 100% from scratch?</div></div>
+        <div class="q-row"><div class="q-cat process">PROCESS</div><div class="q-txt">Is Emily a stakeholder in brand/product reviews? What's her involvement day-to-day?</div></div>
+        <div class="q-row"><div class="q-cat process">PROCESS</div><div class="q-txt">Can we join Utoppia's design partner feedback sessions? When are those?</div></div>
+      </div>
+    </div>
+    <div class="footer"><b>BRANDING OFFICE</b><span>CREATED BY AEROLAB</span></div>
+  </div>
+</div>
+
+<!-- ══ 11 NEXT STEPS ══ -->
+<div class="slide" id="s11">
+  <div class="canvas" id="c11">
+    <div class="left-p">
+      <div>
+        <div class="ns-tag">NEXT STEPS</div>
+        <div class="ns-title">Let's<br>start.</div>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="step-n">01</div><div class="step-t">Align on open questions today with Santi</div></div>
+        <div class="step"><div class="step-n">02</div><div class="step-t">Brand designer starts discovery + moodboards this week</div></div>
+        <div class="step"><div class="step-n">03</div><div class="step-t">Product designer begins UX audit in parallel</div></div>
+        <div class="step"><div class="step-n">04</div><div class="step-t">Schedule Utoppia design partner session observation</div></div>
+        <div class="step"><div class="step-n">05</div><div class="step-t">First WIP brand review — end of Week 1</div></div>
+      </div>
+      <div class="ns-foot">Aerolab × Empático AI · 2026</div>
+    </div>
+    <div class="right-p">
+      <svg class="r-kite" viewBox="0 0 100 120" fill="none">
+        <path d="M50 5 L95 52 L50 115 L5 52 Z" stroke="white" stroke-width="2" fill="none"/>
+      </svg>
+      <div>
+        <div class="r-lbl">LAUNCH TARGET</div>
+        <div class="r-url">empático.ai</div>
+        <div class="r-evt">Zendesk Conference<br>May 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn" id="prev">←</button>
+  <span class="nav-counter" id="ctr">1 / 11</span>
+  <button class="nav-btn" id="next">→</button>
+</div>
+<div class="progress" id="progress"></div>
+
+<script>
+const TOTAL = 10;
+let cur = 0;
+const deck = document.getElementById('deck');
+const ctr  = document.getElementById('ctr');
+const prog = document.getElementById('progress');
+
+function scaleCanvases() {
+  const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+  const ox = (window.innerWidth  - 1280 * scale) / 2;
+  const oy = (window.innerHeight - 720  * scale) / 2;
+  document.querySelectorAll('.canvas').forEach(c => {
+    c.style.transform = `translate(${ox}px,${oy}px) scale(${scale})`;
+  });
+}
+
+function go(n) {
+  n = Math.max(0, Math.min(TOTAL - 1, n));
+  cur = n;
+  deck.style.transform = `translateX(-${cur * 100}vw)`;
+  ctr.textContent = (cur + 1) + ' / ' + TOTAL;
+  prog.style.width = ((cur + 1) / TOTAL * 100) + '%';
+}
+
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  if (['ArrowLeft','ArrowUp'].includes(e.key))        { e.preventDefault(); go(cur - 1); }
+});
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend',   e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1);
+});
+
+scaleCanvases();
+window.addEventListener('resize', scaleCanvases);
+go(0);
+</script>
+</body>
+</html>
