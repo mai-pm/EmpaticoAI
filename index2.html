@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empático AI — Kickoff · Aerolab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'ABC Repro';
+  src: url('https://static.aerolab.dev/fonts/ABCRepro.ttf') format('truetype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #111; }
+
+/* ── Horizontal deck ── */
+.viewport { width: 100vw; height: 100vh; overflow: hidden; position: relative; }
+.deck {
+  display: flex;
+  width: calc(11 * 100vw);
+  height: 100vh;
+  transition: transform .5s cubic-bezier(.77,0,.175,1);
+}
+.slide { width: 100vw; height: 100vh; flex-shrink: 0; position: relative; overflow: hidden; }
+
+/* Fixed 1920×1080 canvas scaled by JS */
+.canvas {
+  position: absolute; top: 0; left: 0;
+  width: 1920px; height: 1080px;
+  transform-origin: top left;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════
+   SHARED CHROME — Logo + Footer only on content slides
+   Forecast + BuildingBlocks only on pure title slides (L1/L4/L5)
+═══════════════════════════════════════════════ */
+.logo {
+  position: absolute; top: 55px; right: 55px;
+  width: 48px; height: 48px;
+}
+.logo img { width: 100%; height: 100%; display: block; }
+
+.footer {
+  position: absolute; top: 1026px; left: 0; right: 0;
+  display: flex; align-items: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.4; text-transform: uppercase;
+  white-space: nowrap; font-feature-settings: 'ss01' 1;
+}
+.footer span { position: absolute; }
+.footer .f-client   { left: 56px; }
+.footer .f-folio    { left: 591px; }
+.footer .f-conf     { left: 1034px; }
+.footer .f-copy     { left: 1625px; display: flex; gap: 8px; }
+.footer-dark   { color: #4a4843; }
+.footer-dawn   { color: rgba(255,80,5,.5); }
+.footer-twi    { color: rgba(32,59,131,.4); }
+.footer-light  { color: #93928f; }
+
+/* Forecast (only on title slides that have space) */
+.forecast {
+  position: absolute; top: 542px; left: 55px; width: 680px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.forecast .fp {
+  width: 100%; height: 270px;
+  border-radius: 13px; overflow: hidden; position: relative;
+}
+.forecast .fp img {
+  position: absolute; top: -44px; left: -44px;
+  width: 1237px; height: 1237px;
+}
+
+/* Building Blocks (only on title slides) */
+.bb {
+  position: absolute; top: 540px; left: 1380px; width: 490px;
+}
+.bb-group { display: flex; gap: 16px; }
+.bb-frame {
+  width: 160px; height: 164px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.bb-icon { width: 72px; height: 72px; }
+.bb-icon img { width: 100%; height: 100%; display: block; }
+
+/* ═══════════════════════════════════════════════
+   TYPOGRAPHY — shared across slides
+═══════════════════════════════════════════════ */
+.repro { font-family: 'ABC Repro', system-ui, sans-serif; font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1; }
+.mono  { font-family: 'JetBrains Mono', monospace; font-feature-settings: 'ss01' 1; }
+
+/* ═══════════════════════════════════════════════
+   SLIDE 01 — L0 OPENING  (dark)
+═══════════════════════════════════════════════ */
+#s1 { background: #2a2823; }
+.l0-caption {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.4; color: #93928f; text-transform: uppercase;
+  font-feature-settings: 'ss01' 1;
+}
+.l0-logo {
+  position: absolute; left: 80px; top: 200px;
+  display: flex; align-items: center; gap: 56px;
+}
+.l0-symbol { width: 300px; height: 260px; flex-shrink: 0; }
+.l0-symbol svg { width: 100%; height: 100%; }
+.l0-logotype { height: 180px; flex-shrink: 0; }
+.l0-logotype svg { height: 100%; width: auto; }
+.l0-tagline {
+  position: absolute; left: 1034px; top: 946px;
+  font-family: 'ABC Repro', system-ui; font-size: 20px;
+  line-height: 1.3; color: #f0f0ef;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.l0-forecast {
+  position: absolute; top: 629px; left: 56px; width: 680px;
+}
+.l0-forecast .fp {
+  width: 100%; height: 270px; border-radius: 13px;
+  border: 1px solid #2a2823; overflow: hidden; position: relative;
+}
+.l0-forecast .fp img {
+  position: absolute; top: -44px; left: -44px;
+  width: 1237px; height: 1237px;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 02 — AGENDA  (L1 dark title)
+   Title at top, list below — Forecast + BB in bottom zone
+═══════════════════════════════════════════════ */
+#s2 { background: #2a2823; }
+.l1-title {
+  position: absolute; top: 135px; left: 58px;
+  display: flex; gap: 32px; align-items: flex-start; width: 900px;
+}
+.l1-num {
+  font-family: 'ABC Repro', system-ui; font-size: 67px;
+  line-height: 1.1; color: #f0f0ef; flex-shrink: 0;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1, 'lnum' 1, 'tnum' 1;
+}
+.l1-text {
+  font-family: 'ABC Repro', system-ui; font-size: 177px;
+  line-height: 0.9; letter-spacing: -0.02em;
+  color: #f0f0ef; text-transform: capitalize;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+/* Agenda rows — contained to left zone, well clear of BB chrome at x:1034 */
+.agenda {
+  position: absolute; top: 395px; left: 58px; width: 820px;
+  display: flex; flex-direction: column;
+}
+.ag-row {
+  display: flex; align-items: baseline; gap: 20px;
+  padding: 14px 0; border-bottom: 1px solid #4a4843;
+}
+.ag-row:last-child { border-bottom: none; }
+.ag-n {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: #93928f; letter-spacing: .04em; text-transform: uppercase;
+  width: 32px; flex-shrink: 0;
+}
+.ag-name {
+  font-family: 'ABC Repro', system-ui; font-size: 28px;
+  line-height: 1.2; color: #f0f0ef; flex: 1;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.ag-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: #4a4843; text-transform: uppercase; flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 03 — TEAM  (L2 lightGray)
+═══════════════════════════════════════════════ */
+#s3 { background: #f0f0ef; }
+.l2-pattern {
+  position: absolute; top: 37.5%; left: -11.2%;
+  width: 14.06%; height: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.l2-pattern-inner {
+  width: 680px; height: 270px; transform: rotate(90deg); flex-shrink: 0;
+}
+.l2-framed {
+  width: 100%; height: 100%; border: 1px solid #2a2823;
+  border-radius: 13px; overflow: hidden; position: relative;
+}
+.l2-framed img { position: absolute; top: -44px; left: -44px; width: 1237px; height: 1237px; }
+.l2-title {
+  position: absolute; top: 135px; left: 58px;
+  font-family: 'ABC Repro', system-ui; font-size: 110px;
+  line-height: 1; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.l2-members {
+  position: absolute; top: 370px; left: 58px; right: 58px;
+  display: flex; gap: 24px;
+}
+.l2-member { display: flex; flex-direction: column; align-items: center; gap: 18px; flex: 1; }
+.l2-photo { width: 192px; height: 192px; border-radius: 50%; overflow: hidden; border: 2px solid #dfdfde; }
+.l2-photo img { width: 100%; height: 100%; object-fit: cover; }
+.l2-name {
+  font-family: 'ABC Repro', system-ui; font-size: 26px;
+  line-height: 1.2; color: #2a2823; text-align: center;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.l2-role {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  line-height: 1.4; color: #93928f; text-transform: uppercase;
+  text-align: center; font-feature-settings: 'ss01' 1;
+}
+.l2-footer {
+  position: absolute; top: 1026px; left: 0; right: 0;
+  display: flex; align-items: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.4; text-transform: uppercase; color: #93928f;
+  font-feature-settings: 'ss01' 1;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 04 — WHAT IS EMPÁTICO?  (L3 Cover orange)
+   Left: title + icon  |  Right: body content
+═══════════════════════════════════════════════ */
+#s4 { background: #fcfcfc; }
+.l3-pattern {
+  position: absolute; top: 37.5%; left: -11.2%;
+  width: 14.06%; height: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.l3-pattern-inner { width: 680px; height: 270px; transform: rotate(90deg); flex-shrink: 0; }
+.l3-framed {
+  width: 100%; height: 100%;
+  border-radius: 13px; overflow: hidden; position: relative;
+}
+.l3-framed img { position: absolute; top: -44px; left: -44px; width: 1237px; height: 1237px; }
+.l3-folio {
+  position: absolute; top: 46px; left: 55px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.4; text-transform: uppercase;
+  font-feature-settings: 'ss01' 1;
+}
+.l3-title-zone {
+  position: absolute; top: 240px; left: 134px; width: 580px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+.l3-title {
+  font-family: 'ABC Repro', system-ui; font-size: 86px;
+  line-height: 1; letter-spacing: -0.03em;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.l3-title p { margin: 0; }
+.l3-icon { width: 72px; height: 72px; }
+.l3-icon img { width: 100%; height: 100%; }
+.l3-body {
+  position: absolute; top: 200px; left: 820px; right: 80px;
+  font-family: 'ABC Repro', system-ui; font-size: 26px;
+  line-height: 1.35; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.l3-quote {
+  font-style: italic; color: #93928f; margin-bottom: 40px;
+  font-size: 24px; line-height: 1.4;
+  border-left: 3px solid currentColor; padding-left: 20px;
+}
+.l3-item {
+  display: flex; gap: 14px; padding: 16px 0;
+  border-bottom: 1px solid #dfdfde;
+}
+.l3-item:last-child { border-bottom: none; }
+.l3-arrow { flex-shrink: 0; font-size: 22px; }
+.l3-footer {
+  position: absolute; top: 1026px; left: 0; right: 0;
+  display: flex; align-items: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.4; text-transform: uppercase;
+  font-feature-settings: 'ss01' 1;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 05 — FOUNDER  (L4 dawn)
+   Title at top, 2-col content, insight bar at bottom
+═══════════════════════════════════════════════ */
+#s5 { background: #feece7; }
+.l4-num {
+  font-family: 'ABC Repro', system-ui; font-size: 64px;
+  line-height: 1.1; color: #ff5005; flex-shrink: 0;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1, 'lnum' 1, 'tnum' 1;
+}
+.l4-text {
+  font-family: 'ABC Repro', system-ui; font-size: 86px;
+  line-height: 1; letter-spacing: -0.02em; color: #ff5005;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.l4-sub {
+  display: block; font-size: 36px; color: rgba(255,80,5,.55);
+  margin-top: 8px; letter-spacing: -0.01em;
+}
+/* Two-column layout — safely within 1080px */
+.founder-grid {
+  position: absolute; top: 330px; left: 58px; right: 58px;
+  display: flex; gap: 0; bottom: 148px;
+}
+.founder-col-left { width: 840px; flex-shrink: 0; padding-right: 48px; }
+.col-divider { width: 1px; background: rgba(255,80,5,.2); flex-shrink: 0; }
+.founder-col-right { flex: 1; padding-left: 48px; }
+.track-row {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 14px 0; border-bottom: 1px solid rgba(255,80,5,.15);
+}
+.track-row:last-child { border-bottom: none; }
+.track-co {
+  font-family: 'ABC Repro', system-ui; font-size: 26px;
+  color: #2a2823; font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.track-ex {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  color: #93928f;
+}
+.op-block { margin-bottom: 24px; }
+.op-block:last-child { margin-bottom: 0; }
+.op-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: #ff5005; margin-bottom: 6px;
+}
+.op-txt {
+  font-family: 'ABC Repro', system-ui; font-size: 22px;
+  line-height: 1.35; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.insight {
+  position: absolute; bottom: 60px; left: 58px; right: 58px;
+  background: rgba(255,80,5,.08); border-left: 3px solid #ff5005;
+  padding: 16px 22px;
+}
+.insight p {
+  font-family: 'ABC Repro', system-ui; font-size: 22px;
+  line-height: 1.35; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.insight b { color: #ff5005; }
+
+/* ═══════════════════════════════════════════════
+   SLIDE 06 — OPPORTUNITY & AMBITION  (L5 twilight)
+   Title, problem/solve row, success grid below
+═══════════════════════════════════════════════ */
+#s6 { background: #e6eeff; }
+.l5-num {
+  font-family: 'ABC Repro', system-ui; font-size: 67px;
+  line-height: 1.1; color: #203b83; flex-shrink: 0;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1, 'lnum' 1, 'tnum' 1;
+}
+.l5-text {
+  font-family: 'ABC Repro', system-ui; font-size: 120px;
+  line-height: 0.9; letter-spacing: -0.02em; color: #203b83;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.prob-row {
+  position: absolute; top: 320px; left: 58px; right: 58px;
+  display: flex; gap: 16px;
+}
+.prob { flex: 1; padding: 20px 22px; border-top: 2px solid; border-radius: 4px; }
+.prob.neg { border-color: #E2373C; background: rgba(226,55,60,.07); }
+.prob.pos { border-color: #0FA05C; background: rgba(15,160,92,.07); }
+.prob-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px;
+  font-feature-settings: 'ss01' 1;
+}
+.prob.neg .prob-lbl { color: #E2373C; }
+.prob.pos .prob-lbl { color: #0FA05C; }
+.prob-txt {
+  font-family: 'ABC Repro', system-ui; font-size: 20px;
+  line-height: 1.35; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.success-zone {
+  position: absolute; top: 570px; left: 58px; right: 58px;
+}
+.success-hdr {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: #203b83; margin-bottom: 14px; font-feature-settings: 'ss01' 1;
+}
+.success-grid { display: flex; gap: 10px; }
+.success-item {
+  flex: 1;
+  padding: 16px 14px 18px;
+  border-top: 2px solid rgba(32,59,131,.2);
+  background: rgba(32,59,131,.06); border-radius: 4px;
+}
+.success-n {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #203b83; letter-spacing: .1em; margin-bottom: 8px;
+}
+.success-t {
+  font-family: 'ABC Repro', system-ui; font-size: 16px;
+  color: #203b83; margin-bottom: 7px; line-height: 1.2;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.success-b {
+  font-family: 'ABC Repro', system-ui; font-size: 14px;
+  color: rgba(32,59,131,.6); line-height: 1.4;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 07 — SCOPE  (light)
+   Title at top, 3-col stream cards below
+═══════════════════════════════════════════════ */
+#s7 { background: #fcfcfc; }
+.light-num {
+  font-family: 'ABC Repro', system-ui; font-size: 67px;
+  line-height: 1.1; color: #2a2823; flex-shrink: 0;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1, 'lnum' 1, 'tnum' 1;
+}
+.light-text {
+  font-family: 'ABC Repro', system-ui; font-size: 177px;
+  line-height: 0.9; letter-spacing: -0.02em; color: #2a2823;
+  text-transform: capitalize;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.stream-grid {
+  position: absolute; top: 360px; left: 58px; right: 58px; bottom: 60px;
+  display: flex; gap: 16px;
+}
+.stream {
+  flex: 1;
+  background: #2a2823; padding: 28px 24px;
+  display: flex; flex-direction: column; border-radius: 4px;
+}
+.st-n {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: .1em; text-transform: uppercase; color: #ff5005;
+  margin-bottom: 12px; font-feature-settings: 'ss01' 1;
+}
+.st-t {
+  font-family: 'ABC Repro', system-ui; font-size: 40px;
+  line-height: 1; color: #f0f0ef; margin-bottom: 4px;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.st-m {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #93928f; letter-spacing: .05em; margin-bottom: 20px;
+  font-feature-settings: 'ss01' 1;
+}
+.st-list { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.st-item {
+  font-family: 'ABC Repro', system-ui; font-size: 19px;
+  color: rgba(240,240,239,.55); line-height: 1.3;
+  padding-left: 18px; position: relative;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.st-item::before { content: '→'; position: absolute; left: 0; color: #ff5005; }
+
+/* ═══════════════════════════════════════════════
+   SLIDE 08 — TIMELINE  (light)
+   Header row + 4 task rows + deadline banner
+═══════════════════════════════════════════════ */
+#s8 { background: #fcfcfc; }
+.tl-folio {
+  position: absolute; top: 46px; left: 55px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: #93928f; text-transform: uppercase; font-feature-settings: 'ss01' 1;
+}
+/* Timeline title — compact, not full 177px which overlaps chart */
+.tl-title {
+  position: absolute; top: 55px; left: 90px;
+  display: flex; align-items: baseline; gap: 20px;
+}
+.tl-title-num {
+  font-family: 'ABC Repro', system-ui; font-size: 40px; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1, 'lnum' 1, 'tnum' 1;
+}
+.tl-title-text {
+  font-family: 'ABC Repro', system-ui; font-size: 88px;
+  line-height: 1; letter-spacing: -0.02em; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+/* Grid constants: GRID_LEFT=90, LABEL_W=270, TL_LEFT=360, TL_W=1470, COL_W=1470/6=245 */
+.tl-grid {
+  position: absolute; top: 175px; left: 90px; width: 1740px;
+  display: flex;
+}
+.tl-label-hdr {
+  width: 270px; flex-shrink: 0;
+  height: 56px; display: flex; align-items: center;
+  border-bottom: 1px solid #dfdfde;
+  font-family: 'ABC Repro', system-ui; font-size: 18px;
+  text-transform: uppercase; color: #93928f;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.tl-cols-hdr { flex: 1; display: flex; }
+.tl-col-hdr {
+  flex: 1; height: 56px; display: flex; align-items: center;
+  justify-content: center; border-bottom: 1px solid #dfdfde;
+  border-left: 1px solid #f0f0ef;
+  font-family: 'ABC Repro', system-ui; font-size: 18px;
+  text-transform: uppercase; color: #93928f;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+/* Task rows */
+.tl-rows {
+  position: absolute; top: 251px; left: 90px; width: 1740px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.tl-row { position: relative; height: 80px; }
+.tl-card {
+  position: absolute; left: 0; top: 0; width: 260px; height: 80px;
+  padding: 10px 18px; border-radius: 4px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.tl-card-name {
+  font-family: 'ABC Repro', system-ui; font-size: 18px;
+  line-height: 1.2; font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.tl-card-dur {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  text-transform: uppercase; margin-top: 4px; font-feature-settings: 'ss01' 1;
+}
+.tl-bar {
+  position: absolute; top: 0; height: 80px; border-radius: 4px;
+  display: flex; align-items: center; padding-left: 16px;
+}
+.tl-bar span {
+  font-family: 'ABC Repro', system-ui; font-size: 18px;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+/* Task colors */
+.c-orange  { background: #feece7; border: 1px solid #ff5005; color: #ff5005; }
+.c-brown   { background: #f0f0ef; border: 1px solid #b05123; color: #b05123; }
+.c-celeste { background: #e6eeff; border: 1px solid #0076cc; color: #0076cc; }
+.c-blue    { background: #e6eeff; border: 1px solid #203b83; color: #203b83; }
+.b-orange  { background: #ff5005; }
+.b-brown   { background: #b05123; }
+.b-celeste { background: #0076cc; }
+.b-blue    { background: #203b83; }
+.b-orange span, .b-brown span, .b-celeste span, .b-blue span { color: #fcfcfc; }
+/* Deadline banner */
+.tl-deadline {
+  position: absolute; top: 635px; left: 90px; right: 90px;
+  height: 100px; background: #203b83; border-radius: 4px;
+  display: flex; align-items: center; padding: 0 28px; gap: 20px;
+}
+.tl-dl-icon { font-size: 28px; flex-shrink: 0; }
+.tl-dl-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.4); margin-bottom: 4px; font-feature-settings: 'ss01' 1;
+}
+.tl-dl-t {
+  font-family: 'ABC Repro', system-ui; font-size: 26px;
+  color: #f0f0ef; font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.tl-dl-s {
+  font-family: 'ABC Repro', system-ui; font-size: 18px;
+  color: rgba(240,240,239,.55); margin-top: 3px;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 09 — HOW WE WORK  (L1 dark)
+   Title at top, 3×2 grid in content zone
+═══════════════════════════════════════════════ */
+#s9 { background: #2a2823; }
+.p-grid {
+  position: absolute; top: 370px; left: 58px; right: 58px; bottom: 60px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.p-row { display: flex; flex: 1; }
+.p-card { flex: 1; padding: 22px; border-top: 1px solid #4a4843; }
+.p-n {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: #ff5005; letter-spacing: .1em; margin-bottom: 10px;
+  font-feature-settings: 'ss01' 1;
+}
+.p-t {
+  font-family: 'ABC Repro', system-ui; font-size: 26px;
+  color: #f0f0ef; margin-bottom: 8px;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+.p-b {
+  font-family: 'ABC Repro', system-ui; font-size: 19px;
+  color: #93928f; line-height: 1.4;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 10 — OPEN QUESTIONS  (light)
+   Title + 7 question rows filling the slide
+═══════════════════════════════════════════════ */
+#s10 { background: #fcfcfc; }
+.q-list {
+  position: absolute; top: 310px; left: 58px; right: 58px; bottom: 60px;
+  display: flex; flex-direction: column;
+}
+.q-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid #dfdfde; flex: 1;
+}
+.q-row:last-child { border-bottom: none; }
+.q-cat {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  letter-spacing: .1em; text-transform: uppercase;
+  width: 110px; flex-shrink: 0; font-feature-settings: 'ss01' 1;
+}
+.q-cat.product { color: #203b83; }
+.q-cat.brand   { color: #ff5005; }
+.q-cat.process { color: #0FA05C; }
+.q-txt {
+  font-family: 'ABC Repro', system-ui; font-size: 24px;
+  color: #2a2823; line-height: 1.3; padding: 0 18px;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDE 11 — NEXT STEPS  (L8 twilight)
+   Title at top, white overlay with items
+═══════════════════════════════════════════════ */
+#s11 { background: #e6eeff; }
+.l8-white {
+  position: absolute; top: 310px; left: 148px; right: 0; bottom: 58px;
+  background: #fcfcfc; border-radius: 21px 0 0 0;
+  z-index: 1; padding: 44px 64px 28px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.l8-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 18px 0; border-bottom: 1px solid #dfdfde; flex: 1;
+}
+.l8-item:last-child { border-bottom: none; }
+.l8-n {
+  font-family: 'ABC Repro', system-ui; font-size: 30px;
+  color: #203b83; width: 52px; flex-shrink: 0;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1, 'lnum' 1, 'tnum' 1;
+}
+.l8-t {
+  font-family: 'ABC Repro', system-ui; font-size: 42px;
+  line-height: 1.1; letter-spacing: -0.01em; color: #2a2823;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+}
+/* Launch info — sits at bottom of the l8-white container */
+.l8-launch {
+  margin-top: auto; padding-top: 16px; padding-bottom: 8px;
+  border-top: 1px solid #dfdfde;
+  display: flex; gap: 20px; align-items: center;
+}
+.l8-launch-lbl {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  text-transform: uppercase; color: rgba(32,59,131,.4);
+  letter-spacing: .1em; flex-shrink: 0; font-feature-settings: 'ss01' 1;
+  white-space: nowrap;
+}
+.l8-launch-url {
+  font-family: 'ABC Repro', system-ui; font-size: 22px;
+  color: #203b83; letter-spacing: -0.01em;
+  font-feature-settings: 'ss07' 1, 'ss08' 1, 'ss09' 1;
+  flex-shrink: 0;
+}
+.l8-launch-evt {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: rgba(32,59,131,.45); text-transform: uppercase;
+  font-feature-settings: 'ss01' 1; white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════ */
+.nav {
+  position: fixed; bottom: 28px; right: 36px; z-index: 200;
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-ctr {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  letter-spacing: .08em; color: rgba(255,255,255,.45);
+  min-width: 44px; text-align: center;
+}
+.nav-btn {
+  width: 38px; height: 38px;
+  background: rgba(42,40,35,.75); border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.7); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px); transition: background .15s, border-color .15s;
+}
+.nav-btn:hover { background: #ff5005; border-color: #ff5005; color: #fff; }
+.progress {
+  position: fixed; bottom: 0; left: 0;
+  height: 2px; background: #ff5005;
+  transition: width .4s ease; z-index: 200;
+}
+</style>
+</head>
+<body>
+<div class="viewport">
+<div class="deck" id="deck">
+
+<!-- ══════════════ 01 — OPENING ══════════════ -->
+<div class="slide" id="s1">
+<div class="canvas">
+  <!-- Captions -->
+  <span class="l0-caption" style="top:117px;left:886px;">Hello,</span>
+  <span class="l0-caption" style="top:117px;left:1033px;">we're so glad you're here.</span>
+  <p class="l0-caption" style="top:271px;left:1033px;width:295px;">Please, don't go anywhere.</p>
+  <p class="l0-caption" style="top:271px;left:1329px;width:295px;">There's something we want to show you.</p>
+  <!-- Logo -->
+  <div class="l0-logo">
+    <div class="l0-symbol"><svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 23.0646 20.009" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.8797 19.2902C11.6529 19.9771 10.2303 20.1588 8.96739 19.8904C5.95115 19.2493 4.18949 16.7853 3.74448 13.2519C3.5702 11.8611 3.38493 10.261 2.78186 8.91802C2.28955 7.81773 1.48752 6.90844 0.0757695 6.57664C0.0228124 6.56452 -0.00893391 6.51275 0.00222794 6.46024C0.0806225 6.09142 0.362982 4.76303 0.441987 4.39134C0.44748 4.3655 0.465022 4.34349 0.485294 4.32851C0.509566 4.3148 0.53615 4.31016 0.560672 4.31537C2.81435 4.82613 4.10929 6.22995 4.89223 7.9726C5.58397 9.52134 5.83814 11.3604 6.03961 12.9649C6.34193 15.381 7.38409 17.1904 9.44805 17.6291C10.2818 17.8063 11.2378 17.6497 12.0102 17.1107C12.0456 17.0848 12.0598 17.0381 12.0431 16.9959C11.717 16.0982 8.37276 6.89178 8.04254 5.97344C8.02613 5.93008 8.0408 5.88131 8.0803 5.85626C8.85356 5.35343 16.2036 0.577385 17.0704 0.0163932C17.0906 0.001817 17.1173 -0.00321097 17.1419 0.00200139C17.1705 0.00808249 17.1928 0.023542 17.2053 0.045068C17.769 0.910114 22.5452 8.26325 23.047 9.03754C23.0729 9.07648 23.0705 9.12787 23.0379 9.16081C22.3108 9.90885 14.6408 17.8375 14.6349 17.8453C14.634 17.8494 14.629 17.8526 14.6241 17.8558C14.3278 18.1646 13.617 18.8762 12.8797 19.2902Z" fill="#ff5005"/></svg></div>
+    <div class="l0-logotype"><svg preserveAspectRatio="xMinYMid meet" viewBox="0 0 1603.44 334.248" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M259.905 328.247V288.341C259.905 287.141 259.305 286.541 258.106 286.541H245.216C235.023 286.541 229.627 280.84 229.627 270.939V171.025C229.627 111.916 178.066 85.8123 124.107 85.8123C63.2525 85.8123 11.6912 103.815 7.79414 163.824C7.79414 165.024 8.39369 165.624 9.59279 165.624H56.6574C57.5568 165.624 58.4561 165.024 58.7559 163.824C61.4538 141.92 85.136 128.418 119.61 128.418C157.082 128.418 178.966 140.72 178.966 160.823V167.724C178.966 180.626 169.373 192.028 145.091 192.028H121.109C41.9685 192.028 0 216.331 0 263.738C0 309.944 35.973 334.248 101.624 334.248C148.988 334.248 175.968 315.345 191.256 300.943C192.156 300.043 193.055 300.343 193.355 301.543C199.65 319.546 217.037 330.047 245.516 330.047H258.106C259.305 330.047 259.905 329.147 259.905 328.247ZM178.966 232.233V238.234C178.966 268.839 148.988 291.342 112.116 291.342C67.7491 291.342 50.9617 281.74 50.9617 260.737C50.9617 242.135 73.1451 230.433 121.109 230.433H177.167C178.366 230.433 178.966 231.033 178.966 232.233ZM265.9 210.03C265.9 284.141 317.462 334.248 390.307 334.248C449.962 334.248 495.228 307.244 507.519 261.037C507.819 259.837 507.219 258.937 506.02 258.937H456.257C455.358 258.937 454.459 259.237 454.159 260.137C444.266 279.34 426.879 291.642 390.307 291.642C345.94 291.642 321.059 264.038 319.86 232.233C319.86 231.033 320.459 230.433 321.658 230.433H512.615C513.514 230.433 514.414 229.833 514.414 228.633C519.809 147.321 469.148 85.8123 390.307 85.8123C317.761 85.8123 265.9 135.019 265.9 210.03ZM319.86 190.227C319.26 167.724 340.544 128.418 390.307 128.418C440.069 128.418 460.154 162.023 459.855 190.227C459.855 191.427 458.955 192.028 458.056 192.028H321.658C320.759 192.028 319.86 191.427 319.86 190.227ZM652.31 135.019H682.287C683.487 135.019 684.086 134.419 684.086 133.219V91.8132C684.086 90.613 683.187 90.0129 682.287 90.0129H660.404C635.822 90.0129 610.641 98.7142 593.254 118.817C592.355 120.017 591.156 119.717 590.856 118.217L584.561 91.5131C584.261 90.613 583.662 90.0129 582.762 90.0129H543.492C542.293 90.0129 541.693 90.9131 541.693 91.8132V328.247C541.693 329.447 542.592 330.047 543.492 330.047H587.858C589.057 330.047 589.657 329.147 589.657 328.247V209.73C589.657 158.423 615.737 135.019 652.31 135.019ZM935.597 210.03C935.597 134.119 881.638 85.8123 808.193 85.8123C734.748 85.8123 681.088 134.119 681.088 210.03C681.088 285.641 735.048 334.248 808.193 334.248C881.338 334.248 935.597 285.641 935.597 210.03ZM884.036 210.03C884.036 257.437 850.161 291.642 808.193 291.642C766.524 291.642 732.65 257.137 732.65 210.03C732.65 162.923 766.524 128.418 808.193 128.418C850.161 128.418 884.036 162.623 884.036 210.03ZM1050.41 328.247V286.841C1050.41 285.641 1049.81 285.041 1048.61 285.041H1035.72C1021.63 285.041 1011.44 278.74 1011.44 261.638C1011.44 231.333 1019.23 200.429 1025.23 166.824C1032.42 128.118 1039.62 84.3121 1040.52 63.9092C1042.62 18.9027 1016.54 0 984.46 0H964.376C963.176 0 962.577 0.600086 962.577 1.80026V41.706C962.577 42.9062 963.476 43.5062 964.376 43.5062H974.868C985.36 43.5062 991.955 49.2071 992.554 63.3091C993.154 82.2118 986.859 112.516 977.865 159.623C970.971 196.528 963.776 235.234 963.776 270.639C963.776 308.744 989.856 330.047 1029.43 330.047H1048.61C1049.81 330.047 1050.41 329.147 1050.41 328.247ZM1315.35 328.247V91.8132C1315.35 90.613 1314.75 90.0129 1313.55 90.0129H1273.98C1273.08 90.0129 1272.48 90.613 1272.18 91.5131L1266.79 114.916C1266.49 116.117 1265.29 116.417 1264.39 115.517C1242.81 94.2135 1214.03 85.8123 1185.25 85.8123C1113.6 85.8123 1063.24 136.22 1063.24 210.33C1063.24 284.141 1113.9 334.248 1185.25 334.248C1213.43 334.248 1247.9 324.047 1264.39 304.544C1265.59 303.344 1266.49 303.644 1266.79 305.144L1272.18 328.547C1272.48 329.447 1273.08 330.047 1273.98 330.047H1313.55C1314.75 330.047 1315.35 329.147 1315.35 328.247ZM1114.8 210.33C1114.8 162.023 1148.38 128.418 1190.35 128.418C1233.81 128.418 1264.39 163.523 1264.39 210.33C1264.39 256.837 1233.81 291.642 1190.35 291.642C1148.68 291.642 1114.8 258.037 1114.8 210.33ZM1351.32 1.80026V328.247C1351.32 329.447 1351.92 330.047 1353.12 330.047H1392.69C1393.59 330.047 1394.19 329.447 1394.49 328.547L1399.59 306.644C1399.89 305.444 1401.09 304.844 1401.99 305.744C1425.07 325.847 1455.95 334.248 1481.43 334.248C1552.77 334.248 1603.44 284.141 1603.44 210.33C1603.44 136.22 1550.08 85.8123 1478.43 85.8123C1448.45 85.8123 1425.97 93.6134 1401.39 114.616C1400.19 115.817 1399.29 115.217 1399.29 113.716V1.80026C1399.29 0.600086 1398.39 0 1397.49 0H1353.12C1351.92 0 1351.32 0.900129 1351.32 1.80026ZM1551.87 210.33C1551.87 257.437 1518 291.642 1476.33 291.642C1432.86 291.642 1402.29 256.237 1402.29 210.33C1402.29 164.424 1432.86 128.718 1476.33 128.718C1518.3 128.718 1551.87 162.923 1551.87 210.33Z" fill="#F0F0EF"/></svg></div>
+  </div>
+  <p class="l0-tagline">Digital Product &amp; Branding Agency</p>
+  <!-- Forecast (hidden border, no labels) -->
+  <div class="l0-forecast"><div class="fp"><img src="https://static.aerolab.dev/svg/framed-pattern.svg" alt=""></div></div>
+</div>
+</div>
+
+<!-- ══════════════ 02 — AGENDA ══════════════ -->
+<div class="slide" id="s2">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2.svg" alt=""></div>
+  <!-- Title -->
+  <div class="l1-title">
+    <span class="l1-num">0.</span>
+    <span class="l1-text">Agenda</span>
+  </div>
+  <!-- Items — safe zone above y:530 chrome -->
+  <div class="agenda">
+    <div class="ag-row"><span class="ag-n">01</span><span class="ag-name">Meet the team</span><span class="ag-sub">The Aerolab crew</span></div>
+    <div class="ag-row"><span class="ag-n">02</span><span class="ag-name">Who is Empático?</span><span class="ag-sub">Product, founder, context</span></div>
+    <div class="ag-row"><span class="ag-n">03</span><span class="ag-name">The opportunity &amp; our ambition</span><span class="ag-sub">Problem, solution, success</span></div>
+    <div class="ag-row"><span class="ag-n">04</span><span class="ag-name">Scope &amp; timeline</span><span class="ag-sub">Three workstreams, 6-week plan</span></div>
+    <div class="ag-row"><span class="ag-n">05</span><span class="ag-name">How we'll work</span><span class="ag-sub">Mindset, cadence, questions</span></div>
+  </div>
+  <!-- Forecast + BB chrome -->
+  <div class="forecast">
+    <div class="fp" style="border:1px solid #4a4843;"><img src="https://static.aerolab.dev/svg/framed-pattern.svg" alt=""></div>
+  </div>
+  <div class="bb">
+    <div class="bb-group">
+      <div class="bb-frame" style="border:1px solid #4a4843;"><div class="bb-icon"><img src="https://static.aerolab.dev/svg/vector-triangle.svg" alt=""></div></div>
+      <div class="bb-frame" style="border:1px solid #4a4843;"><div class="bb-icon"><img src="https://static.aerolab.dev/svg/shape-square.svg" alt=""></div></div>
+      <div class="bb-frame" style="border:1px solid #4a4843;"><div class="bb-icon"><img src="https://static.aerolab.dev/svg/shape-circle.svg" alt=""></div></div>
+    </div>
+  </div>
+  <div class="footer footer-dark">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 03 — TEAM ══════════════ -->
+<div class="slide" id="s3">
+<div class="canvas">
+  <div class="l2-pattern">
+    <div class="l2-pattern-inner">
+      <div class="l2-framed"><img src="https://static.aerolab.dev/svg/framed-pattern-light.svg" alt=""></div>
+    </div>
+  </div>
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-dark.svg" alt=""></div>
+  <h1 class="l2-title">Team</h1>
+  <div class="l2-members">
+    <div class="l2-member">
+      <div class="l2-photo"><img src="https://static.aerolab.dev/svg/profile-placeholder.png" alt="Mai Delgado"></div>
+      <p class="l2-name">Mai Delgado</p>
+      <p class="l2-role">Project Manager<br>Part-time</p>
+    </div>
+    <div class="l2-member">
+      <div class="l2-photo"><img src="https://static.aerolab.dev/svg/profile-placeholder.png" alt="Damian Lopez"></div>
+      <p class="l2-name">Damian Lopez</p>
+      <p class="l2-role">Design Lead<br>Oversight + reviews</p>
+    </div>
+    <div class="l2-member">
+      <div class="l2-photo"><img src="https://static.aerolab.dev/svg/profile-placeholder.png" alt="Magali Bazzi"></div>
+      <p class="l2-name">Magali Bazzi</p>
+      <p class="l2-role">Brand Designer<br>Weeks 1–4</p>
+    </div>
+    <div class="l2-member">
+      <div class="l2-photo"><img src="https://static.aerolab.dev/svg/profile-placeholder.png" alt="Fede Castagno"></div>
+      <p class="l2-name">Fede Castagno</p>
+      <p class="l2-role">Product Designer<br>Weeks 1–6</p>
+    </div>
+  </div>
+  <div class="l2-footer footer-light">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 04 — WHAT IS EMPÁTICO? ══════════════ -->
+<div class="slide" id="s4">
+<div class="canvas">
+  <div class="l3-pattern">
+    <div class="l3-pattern-inner">
+      <div class="l3-framed" style="border:1px solid #ff5005;"><img src="https://static.aerolab.dev/svg/framed-pattern-orange.svg" alt=""></div>
+    </div>
+  </div>
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-orange.svg" alt=""></div>
+  <span class="l3-folio" style="color:#ff5005;">The Product</span>
+  <div class="l3-title-zone">
+    <div class="l3-title" style="color:#ff5005;"><p>What is</p><p>Empático?</p></div>
+    <div class="l3-icon"><img src="https://static.aerolab.dev/svg/offer-icons-orange.svg" alt=""></div>
+  </div>
+  <div class="l3-body">
+    <div class="l3-quote">"AI virtual employees that live inside your CRM and answer CX questions via chat — no dashboards, no SQL, no weekly reports."</div>
+    <div class="l3-item">
+      <span class="l3-arrow" style="color:#ff5005;">→</span>
+      <span><strong>How it works:</strong> Connects to Zendesk, learns your brand context, creates AI analysts you can query conversationally</span>
+    </div>
+    <div class="l3-item">
+      <span class="l3-arrow" style="color:#ff5005;">→</span>
+      <span><strong>What it replaces:</strong> Manual tagging, spreadsheets, waiting for the weekly CX report</span>
+    </div>
+    <div class="l3-item">
+      <span class="l3-arrow" style="color:#ff5005;">→</span>
+      <span><strong>Current state:</strong> 2 virtual employees live. Design partners actively using it. The AI is real.</span>
+    </div>
+  </div>
+  <div class="l3-footer footer-dawn">
+    <span class="f-client" style="color:#ff5005;">Empático AI</span>
+    <span class="f-copy" style="color:#ff5005;right:55px;left:auto;">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 05 — FOUNDER ══════════════ -->
+<div class="slide" id="s5">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-orange.svg" alt=""></div>
+  <!-- Title -->
+  <div class="l1-title" style="width:1200px;">
+    <span class="l4-num">1.</span>
+    <span class="l4-text">Santiago Merea<span class="l4-sub">Co-founder &amp; CEO, Empático AI</span></span>
+  </div>
+  <!-- 2-col content — safely within 330px–932px (above footer) -->
+  <div class="founder-grid">
+    <div class="founder-col-left">
+      <div class="track-row"><span class="track-co">Orange Chef</span><span class="track-ex">→ acquired by Yummly</span></div>
+      <div class="track-row"><span class="track-co">Raised Real</span><span class="track-ex">→ acquired by Once Upon a Farm</span></div>
+      <div class="track-row"><span class="track-co">Solid Starts</span><span class="track-ex">→ referred us, also a client</span></div>
+      <div class="track-row"><span class="track-co">Empático AI</span><span class="track-ex">→ started early 2025</span></div>
+    </div>
+    <div class="col-divider"></div>
+    <div class="founder-col-right">
+      <div class="op-block"><div class="op-lbl">How he operates</div><div class="op-txt">Zero patience for fluff. Go direct. Show pixels, not pitches. Opens up fast when you put prototypes in front of him.</div></div>
+      <div class="op-block"><div class="op-lbl">MVP mindset</div><div class="op-txt">Scrappy &gt; polished. Fast &gt; thorough. Rough in 2 days and iterate beats 2 weeks for perfect.</div></div>
+      <div class="op-block"><div class="op-lbl">Communication</div><div class="op-txt">Slack or short calls. Direct. Appreciates push-back — just show your reasoning.</div></div>
+    </div>
+  </div>
+  <div class="insight"><p><b>For the team:</b> Bring WIP early and often. Deep history with Aerolab (3 years on Raised Real). Trust is earned — let's keep it.</p></div>
+  <div class="footer footer-dawn">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 06 — OPPORTUNITY & AMBITION ══════════════ -->
+<div class="slide" id="s6">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-blue.svg" alt=""></div>
+  <!-- Title -->
+  <div class="l1-title" style="width:1300px;">
+    <span class="l5-num">2.</span>
+    <span class="l5-text">The opportunity</span>
+  </div>
+  <!-- Problem / solve row -->
+  <div class="prob-row">
+    <div class="prob neg">
+      <div class="prob-lbl">⚠ The problem</div>
+      <div class="prob-txt">Empático's AI works — but the product looks like a prototype built by engineers with no designer in the room. Enterprise buyers need to trust what they see before they buy what they can't yet see.</div>
+    </div>
+    <div class="prob pos">
+      <div class="prob-lbl">✓ What we solve</div>
+      <div class="prob-txt">We give Empático the identity, the interface, and the story it needs to sell. A brand that signals serious B2B product. A UI that feels inevitable — built for how CX teams actually think.</div>
+    </div>
+  </div>
+  <!-- Success grid -->
+  <div class="success-zone">
+    <div class="success-hdr">WHAT SUCCESS LOOKS LIKE</div>
+    <div class="success-grid">
+      <div class="success-item"><div class="success-n">01</div><div class="success-t">A product that earns attention</div><div class="success-b">Walking into Zendesk Conference with something polished and compelling enough to stop the right people.</div></div>
+      <div class="success-item"><div class="success-n">02</div><div class="success-t">Design backed by real insight</div><div class="success-b">Every decision informed by actual users — research that shapes the product, not just validates it.</div></div>
+      <div class="success-item"><div class="success-n">03</div><div class="success-t">A brand built to scale</div><div class="success-b">An identity strong enough to grow — from first demo to first funding round to first 100 customers.</div></div>
+      <div class="success-item"><div class="success-n">04</div><div class="success-t">A UI that feels inevitable</div><div class="success-b">So clear that users don't think about it — they just get answers. The product disappears; the insight remains.</div></div>
+      <div class="success-item"><div class="success-n">05</div><div class="success-t">Aerolab as a true partner</div><div class="success-b">Not a vendor delivering specs — embedded in the problem, moving fast, thinking strategically.</div></div>
+    </div>
+  </div>
+  <div class="footer footer-twi">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 07 — SCOPE ══════════════ -->
+<div class="slide" id="s7">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-dark.svg" alt=""></div>
+  <!-- Title -->
+  <div class="l1-title">
+    <span class="light-num">3.</span>
+    <span class="light-text">Scope</span>
+  </div>
+  <!-- 3 stream cards -->
+  <div class="stream-grid">
+    <div class="stream">
+      <div class="st-n">01 — Brand Identity</div>
+      <div class="st-t">Brand</div>
+      <div class="st-m">WEEKS 1–2 · $10K EQUIV</div>
+      <div class="st-list">
+        <div class="st-item">Logo &amp; brand mark</div>
+        <div class="st-item">Brand guidelines (color, type, tone, usage)</div>
+        <div class="st-item">Core asset kit — icons, patterns, social templates</div>
+      </div>
+    </div>
+    <div class="stream">
+      <div class="st-n">02 — Website</div>
+      <div class="st-t">Website</div>
+      <div class="st-m">WEEKS 3–4 · $9K EQUIV</div>
+      <div class="st-list">
+        <div class="st-item">One-pager on Framer</div>
+        <div class="st-item">Demo booking via Calendly CTA</div>
+        <div class="st-item">Product explainer + use cases, responsive</div>
+      </div>
+    </div>
+    <div class="stream">
+      <div class="st-n">03 — Product UI/UX</div>
+      <div class="st-t">Product</div>
+      <div class="st-m">WEEKS 3–6 · $15K EQUIV</div>
+      <div class="st-list">
+        <div class="st-item">UX audit of current platform</div>
+        <div class="st-item">Login, onboarding, employee selection, chat</div>
+        <div class="st-item">UI kit + design system for dev handoff</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer footer-light">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 08 — TIMELINE ══════════════ -->
+<div class="slide" id="s8">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-dark.svg" alt=""></div>
+  <span class="tl-folio">Empático AI + Aerolab</span>
+  <!-- Compact title — stays above grid at y:175 -->
+  <div class="tl-title">
+    <span class="tl-title-num">4.</span>
+    <span class="tl-title-text">Timeline</span>
+  </div>
+  <!-- Grid header -->
+  <div class="tl-grid">
+    <div class="tl-label-hdr">Task</div>
+    <div class="tl-cols-hdr">
+      <div class="tl-col-hdr">01</div><div class="tl-col-hdr">02</div>
+      <div class="tl-col-hdr">03</div><div class="tl-col-hdr">04</div>
+      <div class="tl-col-hdr">05</div><div class="tl-col-hdr">06</div>
+    </div>
+  </div>
+  <!-- Task rows
+       LABEL_W=270, COL_W=245, TL_LEFT=360
+       Bar left = 270 + (startWk-1)*245
+       Bar width = spanWks * 245  -->
+  <div class="tl-rows">
+    <!-- Brand: wk 1-2 -->
+    <div class="tl-row">
+      <div class="tl-card c-orange" style="width:260px;"><p class="tl-card-name">Brand Identity</p><p class="tl-card-dur">2 weeks</p></div>
+      <div class="tl-bar b-orange" style="left:270px;width:490px;"><span>Brand Identity</span></div>
+    </div>
+    <!-- UX Audit: wk 1-2 -->
+    <div class="tl-row">
+      <div class="tl-card c-brown" style="width:260px;"><p class="tl-card-name">UX Audit</p><p class="tl-card-dur">2 weeks (parallel)</p></div>
+      <div class="tl-bar b-brown" style="left:270px;width:490px;"><span>UX Audit</span></div>
+    </div>
+    <!-- Website: wk 3-4 -->
+    <div class="tl-row">
+      <div class="tl-card c-celeste" style="width:260px;"><p class="tl-card-name">Website (Framer)</p><p class="tl-card-dur">2 weeks</p></div>
+      <div class="tl-bar b-celeste" style="left:760px;width:490px;"><span>Website</span></div>
+    </div>
+    <!-- Product: wk 3-6 -->
+    <div class="tl-row">
+      <div class="tl-card c-blue" style="width:260px;"><p class="tl-card-name">Product UI/UX</p><p class="tl-card-dur">4 weeks</p></div>
+      <div class="tl-bar b-blue" style="left:760px;width:980px;"><span>Product UI/UX</span></div>
+    </div>
+  </div>
+  <!-- Deadline banner -->
+  <div class="tl-deadline">
+    <div class="tl-dl-icon">🚀</div>
+    <div>
+      <div class="tl-dl-lbl">Hard Deadline</div>
+      <div class="tl-dl-t">Zendesk Conference — May 2026</div>
+      <div class="tl-dl-s">Brand + website live before selling season. Product demo ready for conference.</div>
+    </div>
+  </div>
+  <div class="footer" style="color:#ff5005;">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 09 — HOW WE WORK ══════════════ -->
+<div class="slide" id="s9">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2.svg" alt=""></div>
+  <div class="l1-title">
+    <span class="l1-num">5.</span>
+    <span class="l1-text" style="font-size:130px;white-space:nowrap;">How we work</span>
+  </div>
+  <!-- 3×2 grid in safe zone -->
+  <div class="p-grid">
+    <div class="p-row">
+      <div class="p-card"><div class="p-n">01</div><div class="p-t">Startup mode</div><div class="p-b">Fast, scrappy, opinionated. No big reveals — WIP early and often. Short feedback loops.</div></div>
+      <div class="p-card"><div class="p-n">02</div><div class="p-t">Show, don't talk</div><div class="p-b">Put pixels in front of Santi. Don't pitch in the abstract. Prototypes beat explanations every time.</div></div>
+      <div class="p-card"><div class="p-n">03</div><div class="p-t">Iterative by design</div><div class="p-b">Brand first (wks 1–2). Website + product parallel from wk 3. Build → react → rebuild.</div></div>
+    </div>
+    <div class="p-row">
+      <div class="p-card"><div class="p-n">04</div><div class="p-t">User insight built-in</div><div class="p-b">Join Utoppia design partner sessions. Observe and fold insights into the design.</div></div>
+      <div class="p-card"><div class="p-n">05</div><div class="p-t">Time is real</div><div class="p-b">Zendesk Conference is a hard date. Commercial readiness is the KPI for every decision we make.</div></div>
+      <div class="p-card"><div class="p-n">06</div><div class="p-t">Figma for handoff</div><div class="p-b">We design in Figma, they implement. Website on Framer. UI kit delivered for their devs.</div></div>
+    </div>
+  </div>
+  <div class="footer footer-dark">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 10 — OPEN QUESTIONS ══════════════ -->
+<div class="slide" id="s10">
+<div class="canvas">
+  <div class="logo"><img src="https://static.aerolab.dev/svg/symbol-v2-dark.svg" alt=""></div>
+  <div class="l1-title">
+    <span class="light-num" style="font-size:67px;">6.</span>
+    <span class="light-text" style="font-size:140px;">Questions</span>
+  </div>
+  <div class="q-list">
+    <div class="q-row"><span class="q-cat product">Product</span><span class="q-txt">Who is the ideal customer? Enterprise, mid-market, early-stage? US-focused or Latam-first?</span></div>
+    <div class="q-row"><span class="q-cat product">Product</span><span class="q-txt">How will you monetize — per virtual employee, per seat, or usage-based?</span></div>
+    <div class="q-row"><span class="q-cat product">Product</span><span class="q-txt">What does the Zendesk Conference demo need to show to close deals?</span></div>
+    <div class="q-row"><span class="q-cat brand">Brand</span><span class="q-txt">Brands you admire visually? Words that SHOULD and SHOULD NOT describe Empático?</span></div>
+    <div class="q-row"><span class="q-cat brand">Brand</span><span class="q-txt">Anything from the current identity to keep, or is this 100% from scratch?</span></div>
+    <div class="q-row"><span class="q-cat process">Process</span><span class="q-txt">Is Emily a stakeholder in brand/product reviews? What's her day-to-day involvement?</span></div>
+    <div class="q-row"><span class="q-cat process">Process</span><span class="q-txt">Can we join Utoppia's design partner feedback sessions? When are those scheduled?</span></div>
+  </div>
+  <div class="footer footer-light">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ 11 — NEXT STEPS ══════════════ -->
+<div class="slide" id="s11">
+<div class="canvas">
+  <div class="logo" style="z-index:2;"><img src="https://static.aerolab.dev/svg/symbol-v2-blue.svg" alt=""></div>
+  <!-- Title -->
+  <div class="l1-title" style="width:700px;">
+    <span class="l5-num" style="font-size:50px;">7.</span>
+    <span class="l5-text" style="font-size:110px;">Next steps</span>
+  </div>
+  <!-- White overlay — L8 archetype. Launch info lives at bottom inside container -->
+  <div class="l8-white">
+    <div class="l8-item"><span class="l8-n">1</span><span class="l8-t">Align on open questions with Santi today</span></div>
+    <div class="l8-item"><span class="l8-n">2</span><span class="l8-t">Brand discovery + moodboards start this week</span></div>
+    <div class="l8-item"><span class="l8-n">3</span><span class="l8-t">Product designer begins UX audit in parallel</span></div>
+    <div class="l8-item"><span class="l8-n">4</span><span class="l8-t">Schedule Utoppia design partner session observation</span></div>
+    <div class="l8-item"><span class="l8-n">5</span><span class="l8-t">First WIP brand review — end of Week 1</span></div>
+    <div class="l8-launch">
+      <div class="l8-launch-lbl">Launch Target</div>
+      <div class="l8-launch-url">empático.ai</div>
+      <div class="l8-launch-evt">Zendesk Conference · May 2026</div>
+    </div>
+  </div>
+  <div class="footer footer-twi" style="z-index:2;">
+    <span class="f-client">Empático AI</span><span class="f-folio">Created by Aerolab</span>
+    <span class="f-conf">Strictly Confidential</span><span class="f-copy">© 2026</span>
+  </div>
+</div>
+</div>
+
+</div><!-- /deck -->
+</div><!-- /viewport -->
+
+<div class="nav">
+  <button class="nav-btn" id="prev">←</button>
+  <span class="nav-ctr" id="ctr">1 / 11</span>
+  <button class="nav-btn" id="next">→</button>
+</div>
+<div class="progress" id="progress"></div>
+
+<script>
+const TOTAL = 11;
+let cur = 0;
+const deck = document.getElementById('deck');
+const ctr  = document.getElementById('ctr');
+const prog = document.getElementById('progress');
+
+function scaleCanvases() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const scale = Math.min(W / 1920, H / 1080);
+  const ox = (W - 1920 * scale) / 2;
+  const oy = (H - 1080 * scale) / 2;
+  document.querySelectorAll('.canvas').forEach(c => {
+    c.style.transform = `translate(${ox}px,${oy}px) scale(${scale})`;
+  });
+}
+
+function go(n) {
+  n = Math.max(0, Math.min(TOTAL - 1, n));
+  cur = n;
+  deck.style.transform = `translateX(-${cur * 100}vw)`;
+  ctr.textContent = (cur + 1) + ' / ' + TOTAL;
+  prog.style.width = ((cur + 1) / TOTAL * 100) + '%';
+}
+
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  if (['ArrowLeft','ArrowUp'].includes(e.key))        { e.preventDefault(); go(cur - 1); }
+});
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend',   e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1);
+});
+scaleCanvases();
+window.addEventListener('resize', scaleCanvases);
+go(0);
+</script>
+</body>
+</html>
